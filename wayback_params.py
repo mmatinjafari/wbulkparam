@@ -53,11 +53,30 @@ def fetch_and_extract(domain):
 
 def main():
     parser = argparse.ArgumentParser(description="Fetch Wayback Machine URLs and extract parameters.")
-    parser.add_argument("-d", "--domain", required=True, help="Target domain (e.g. example.com)")
+    parser.add_argument("-d", "--domain", help="Target domain (e.g. example.com)")
+    parser.add_argument("-l", "--list", help="File with list of domains (one per line)")
     parser.add_argument("-o", "--output", help="Save results to file")
     args = parser.parse_args()
 
-    params = fetch_and_extract(args.domain)
+    if not args.domain and not args.list:
+        parser.error("at least one of -d/--domain or -l/--list is required")
+
+    domains = []
+    if args.domain:
+        domains.append(args.domain)
+    if args.list:
+        try:
+            with open(args.list) as f:
+                domains.extend(line.strip() for line in f if line.strip())
+        except FileNotFoundError:
+            print(f"[!] File not found: {args.list}")
+            sys.exit(1)
+
+    all_params = set()
+    for domain in domains:
+        all_params.update(fetch_and_extract(domain))
+
+    params = sorted(all_params)
 
     if not params:
         print("[-] No parameters found.")
