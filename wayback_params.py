@@ -23,8 +23,8 @@ def fetch_and_extract(domain):
         resp = session.get(url, timeout=300, stream=True)
         resp.raise_for_status()
     except Exception as e:
-        print(f"[!] Error: {e}")
-        sys.exit(1)
+        print(f"[!] Error fetching {domain}: {e}")
+        return []
 
     params = set()
     url_count = 0
